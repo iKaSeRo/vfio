@@ -1,0 +1,37 @@
+#!/bin/sh
+
+configdir="${XDG_CONFIG_HOME:-$HOME/.config}/vfio"
+
+[ ! -d "$configdir" ] && echo "Directory $configdir does not exist, creating..." && mkdir -p "$configdir"
+
+mkvfio="$configdir/mkinitcpio.vfio"
+mknorm="$configdir/mkinitcpio.conf"
+
+[ ! -f "$mkvfio" ] && echo "File $mkvfio does not exist, please make a mkinitcpio.conf with your vfio changes" && exit 1
+[ ! -f "$mknorm" ] && echo "File $mknorm does not exist, please copy your normal /etc/mkinitcpio.conf without vfio changes" && exit 1
+
+
+passin(){
+    sudo cp "$1" /etc/mkinitcpio.conf
+	sudo mkinitcpio -P
+	sudo grub-mkconfig -o /boot/grub/grub.cfg
+
+    [ "$1" = "$mkvfio" ] && mBridge; [ "$1" = "$mknorm" ] && nmcli con delete bridge-br0
+
+    echo "Reboot now? [y/N] " && read -r askReboot
+    [ "$askReboot" = y ] || [ "$askReboot" = Y ] && echo "Rebooting..."
+}
+
+
+mBridge(){
+    interface="eth0"
+
+    nmcli connection add type bridge ifname br0 stp no
+    nmcli connection add type bridge-slave ifname "$interface" master br0
+    nmcli connection down ethernet-"$interface"
+    nmcli connection up bridge-br0
+}
+
+echo "[pass]through or [take] your GPU? " && read -r pt
+
+[ "$pt" = pass ] && passin "$mkvfio"; [ "$pt" = take ] && passin "$mknorm"; [ "$pt" != pass ] && [ "$pt" != take ] && echo "Invalid input please type either [pass] or [take]"
