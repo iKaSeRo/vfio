@@ -55,9 +55,9 @@ echo "[pass]through or [take] your GPU? " && read -r pt
 # And depending on it passes or takes back the GPU
 case "$pt" in
     [pP][aA][sS][sS] | [pP])
-        echo "pass";;
+        passin "$mkvfio";;
     [tT][aA][kK][eE] | [tT])
-        echo "take";;
+        passin "$mknorm";;
     *)
         echo "Invalid input please type either [pass] or [take]" && exit 1
 esac
