@@ -53,4 +53,11 @@ echo "[pass]through or [take] your GPU? " && read -r pt
 
 # Takes the user input from the last command
 # And depending on it passes or takes back the GPU
-[ "$pt" = pass ] && passin "$mkvfio"; [ "$pt" = take ] && passin "$mknorm"; [ "$pt" != pass ] && [ "$pt" != take ] && echo "Invalid input please type either [pass] or [take]"
+case "$pt" in
+    [pP][aA][sS][sS] | [pP])
+        echo "pass";;
+    [tT][aA][kK][eE] | [tT])
+        echo "take";;
+    *)
+        echo "Invalid input please type either [pass] or [take]" && exit 1
+esac
